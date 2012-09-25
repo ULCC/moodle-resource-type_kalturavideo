@@ -1,18 +1,18 @@
 <?php
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/blocks/kaltura/lib.php');
-require_js($CFG->wwwroot.'/blocks/kaltura/js/jquery.js');
-require_js($CFG->wwwroot.'/blocks/kaltura/js/kvideo.js');
-require_js($CFG->wwwroot.'/blocks/kaltura/js/swfobject.js');
-
 class resource_kalturavideo extends resource_base {
 
     function resource_kalturavideo($cmid = 0) {
-        global $COURSE;
+        global $COURSE, $CFG;
+        require_once($CFG->dirroot.'/blocks/kaltura/lib.php');
+        require_js($CFG->wwwroot.'/blocks/kaltura/js/jquery.js');
+        require_js($CFG->wwwroot.'/blocks/kaltura/js/kvideo.js');
+        require_js($CFG->wwwroot.'/blocks/kaltura/js/swfobject.js');
 
         parent::resource_base($cmid);
-        $this->release = '1.1';
+
+        $this->release  = '1.2';
 
         // Add Kaltura block instance (needed for backup and restor purposes)
         $blockid = get_field('block', 'id', 'name', 'kaltura');
@@ -241,7 +241,7 @@ class resource_kalturavideo extends resource_base {
             }
         }
 
-        $hidden_alltext = new HTML_QuickForm_hidden('alltext', $default_entry->dimensions, array('id' => 'id_alltext'));
+        $hidden_alltext = new HTML_QuickForm_hidden('alltext', '', array('id' => 'id_alltext'));
         $mform->addElement($hidden_alltext);
 
         $hidden_popup = new HTML_QuickForm_hidden('popup', '', array('id' => 'id_popup'));
@@ -310,6 +310,7 @@ class resource_kalturavideo extends resource_base {
 
         $preview_url        = $CFG->wwwroot . '/blocks/kaltura/kpreview.php?';
         $preview_url_init   = $preview_url;
+        $preview_entry_id   = '';
 
         $upload_type_video  = '';
         $upload_type_mix    = '';
@@ -321,7 +322,9 @@ class resource_kalturavideo extends resource_base {
             $upload_type_video  = '&upload_type=video';
             $upload_type_mix    = '&upload_type=mix';
 
-            $preview_url_init   .= 'entry_id=' . $entry->entry_id . '&design=' . $entry->design . '&width=' . get_width($entry) . '&dimensions=' . $entry->dimensions;
+            $preview_url_init   .= 'entry_id=\' + value ' . '+ \'&design=' . $entry->design . '&width=' . get_width($entry) . '&dimensions=' . $entry->dimensions;
+            $preview_entry_id    = "var value = document.getElementById('id_alltext').value;";
+
             $edit_url_init      .= 'entry_id=' . $entry->entry_id;
 
 
@@ -340,8 +343,6 @@ class resource_kalturavideo extends resource_base {
             'style' => (empty($entry) ? 'display:inline' : 'display:none'),
         );
 
-
-
         $button_attributes_editable = array(
             'type' => 'button',
             'onclick' => 'set_entry_type('.KalturaEntryType::MIX.');kalturaInitModalBox(\''. $cw_url_init .  $upload_type_mix .'\', {width:763, height:433});',
@@ -350,7 +351,6 @@ class resource_kalturavideo extends resource_base {
             'style' => (empty($entry) ? 'display:inline;margin-left:90px;' : 'display:none'),
         );
         // RL - EDIT END
-
 
         $upload_type = '';
 
@@ -368,7 +368,7 @@ class resource_kalturavideo extends resource_base {
 
         $button_attributes_preview = array(
             'type' => 'button',
-            'onclick' => 'kalturaInitModalBox(\''. $preview_url_init .'\', ' . (empty($entry) ? '{width:405, height:382}' : ('{width:' . (get_width($entry)) . ', height:' . (get_height($entry)+50) . '}')) . ');',
+            'onclick' => $preview_entry_id . 'kalturaInitModalBox(\''. $preview_url_init .'\', ' . (empty($entry) ? '{width:405, height:382}' : ('{width:' . (get_width($entry)) . ', height:' . (get_height($entry)+50) . '}')) . ');',
             'id' => 'id_preview',
             'value' => $previewlabel,
             'style' => ((empty($entry) || $entry->entry_type != KalturaEntryType::MEDIA_CLIP) ? 'display:none' : 'display:inline'),
@@ -434,6 +434,7 @@ class resource_kalturavideo extends resource_base {
                             ), false, true);
 
         require_js($CFG->wwwroot . '/blocks/kaltura/js/kaltura.lib.js');
+        require_js($CFG->wwwroot . '/blocks/kaltura/js/videoresource.js');
 
         $divwait_contents           = get_wait_image('divWait', 'id_alltext', false, true);
         $please_wait_contents       = empty($entry) ? '' : get_string('video', 'resource_kalturavideo');
