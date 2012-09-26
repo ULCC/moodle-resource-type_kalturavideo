@@ -204,7 +204,7 @@ class resource_kalturavideo extends resource_base {
 
     function setup_elements(&$mform) {
 
-        global $CFG;
+        global $CFG, $COURSE;
 
         $default_entry = new stdClass();
         $partner_id = KalturaHelpers::getPlatformKey('kaltura_partner_id', 'none');
@@ -302,7 +302,7 @@ class resource_kalturavideo extends resource_base {
         $previewlabel       = get_string('previewvideo', 'resource_kalturavideo');
         $previeweditlabel   = get_string('previeweditvideo', 'resource_kalturavideo');
 
-        $cw_url         = $CFG->wwwroot . '/blocks/kaltura/kcw.php?';
+        $cw_url         = $CFG->wwwroot . '/blocks/kaltura/kcw.php?courseid='.$COURSE->id;
         $cw_url_init    = $cw_url;
 
         $edit_url       = $CFG->wwwroot . '/blocks/kaltura/keditor.php?';
@@ -317,7 +317,7 @@ class resource_kalturavideo extends resource_base {
 
         if (!empty($entry)) {
 
-            $cw_url_init        .= 'id=' . $entry->id;
+            $cw_url_init        .= '&id=' . $entry->id;
 
             $upload_type_video  = '&upload_type=video';
             $upload_type_mix    = '&upload_type=mix';
